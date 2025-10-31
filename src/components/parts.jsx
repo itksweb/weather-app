@@ -15,7 +15,7 @@ export const UnitsDropdown = ({}) => {
     wispUnit,
     tempUnit,
     setApiUrl,
-    setOpenUnits
+    setOpenUnits,
   } = use(WeatherInfoContext);
 
   useEffect(() => {
@@ -51,12 +51,12 @@ export const UnitsDropdown = ({}) => {
     }
   };
 
-   useEffect(() => {
-     document.addEventListener("mousedown", handleClickOutside);
-     return () => {
-       document.removeEventListener("mousedown", handleClickOutside);
-     };
-   }, [dropdownRef]);
+  useEffect(() => {
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [dropdownRef]);
 
   const SwitchButton = ({ title }) => {
     return (
@@ -99,7 +99,10 @@ export const UnitsDropdown = ({}) => {
   };
 
   return (
-    <div ref={dropdownRef} className="z-10 space-y-3 bg-neutral-800 mt-2 ring ring-neutral-600 p-2 rounded-md shadow-sm w-46 absolute right-0 ">
+    <div
+      ref={dropdownRef}
+      className="z-10 space-y-3 bg-neutral-800 mt-2 ring ring-neutral-600 p-2 rounded-md shadow-sm w-46 absolute right-0 "
+    >
       <div className="grid grid-cols-2 gap-2 ">
         <SwitchButton title="IMPERIAL" />
         <SwitchButton title="METRIC" />
@@ -185,7 +188,7 @@ export const DailyForcast = () => {
 
   return (
     <div className="">
-      <h4 className="text-xl">Daily forecast</h4>
+      <h4 className="text-xl mb-2">Daily forecast</h4>
       <div className="grid grid-cols-7 gap-3">
         {weekData.map((item) => {
           return (
@@ -261,7 +264,10 @@ const DaysDropdown = () => {
   };
 
   const handleClickOutside = (e) => {
-    if (daysDropdownRef.current && !daysDropdownRef.current.contains(e.target)) {
+    if (
+      daysDropdownRef.current &&
+      !daysDropdownRef.current.contains(e.target)
+    ) {
       setOpenDays(false);
     }
   };
@@ -273,10 +279,11 @@ const DaysDropdown = () => {
     };
   }, [daysDropdownRef]);
 
-
-
   return (
-    <div ref={daysDropdownRef} className="z-10 grid gap-3 bg-neutral-800 ring ring-neutral-600 p-2 rounded-md shadow-sm w-40 absolute right-0 ">
+    <div
+      ref={daysDropdownRef}
+      className="z-10 grid gap-3 bg-neutral-800 ring ring-neutral-600 p-2 rounded-md shadow-sm w-40 absolute right-0 "
+    >
       {weekData.map((it, index) => (
         <button
           onClick={() => handleClick(it[0], index)}
