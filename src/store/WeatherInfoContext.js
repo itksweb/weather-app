@@ -33,18 +33,26 @@ export const WeatherInfoProvider = ({ children }) => {
     setOpenDays,
     selectedDay,
     setSelectedDay,
-    openUnits,setOpenUnits, apiUrl, setApiUrl, weekData, setWeekData, hourlyData, setHourlyData
+    openUnits,
+    setOpenUnits,
+    apiUrl,
+    setApiUrl,
+    weekData,
+    setWeekData,
+    hourlyData,
+    setHourlyData,
+    current,
+    setCurrent,
+    precUnit,
+    setPrecUnit,
+    tempUnit,
+    setTempUnit,
+    wispUnit,
+    setWispUnit,
   };
   return (
     <WeatherInfoContext.Provider
-      value={{
-        theme,
-        setTheme,
-        openDays,
-        setOpenDays,
-        selectedDay,
-        setSelectedDay,
-      }}
+      value={{...value}}
     >
       {children}
     </WeatherInfoContext.Provider>
