@@ -1,10 +1,13 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { WeatherInfoProvider } from './store/weatherInfoContext.js'
 import './index.css'
 import App from './App.jsx'
 
-createRoot(document.getElementById('root')).render(
+createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <App />
-  </StrictMode>,
-)
+    <WeatherInfoProvider>
+      <App />
+    </WeatherInfoProvider>
+  </StrictMode>
+);
