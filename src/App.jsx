@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, use } from "react";
+import { WeatherInfoContext } from "./store/weatherInfoContext";
 import Header from "./components/Header";
 import { UnitsDropdown } from "./components/Dropdown";
 import { getCurrent, getWeeksData, getHourly, fetchWeatherInfo } from "./utils";
@@ -13,9 +14,9 @@ const baseUrl =
   "https://api.open-meteo.com/v1/forecast?latitude=52.52&longitude=13.419998&daily=temperature_2m_max,temperature_2m_min&hourly=temperature_2m&current=temperature_2m,precipitation,wind_speed_10m,relative_humidity_2m,apparent_temperature&timezone=auto";
 
 const App = () => {
-  const [theme, setTheme] = useState("dark");
+  const { theme, setTheme, apiUrl } = use(WeatherInfoContext);
+
   const [openUnits, setOpenUnits] = useState(false);
-  const [apiUrl, setApiUrl] = useState(baseUrl);
   const [wispUnit, setWispUnit] = useState("");
   const [tempUnit, setTempUnit] = useState("");
   const [precUnit, setPrecUnit] = useState("");
@@ -29,6 +30,7 @@ const App = () => {
     det: [],
   });
 
+  useEffect(() => console.log(apiUrl), []);
   // useEffect(() => {
   //   const setUrl = () => {
   //     if (!wispUnit && !tempUnit && precUnit) {
@@ -69,11 +71,11 @@ const App = () => {
     getWeatherInfo();
   }, []);
 
-  useEffect(()=>{
+  useEffect(() => {
     if (weekData.length) {
       setSelectedDay(weekData[0][0]);
     }
-  },[weekData])
+  }, [weekData]);
 
   useEffect(() => {
     // const userThemePref = retrieveUserPref();
@@ -82,8 +84,6 @@ const App = () => {
     // }
     // console.log(bg)
   }, []);
-
-  
 
   return (
     <div
