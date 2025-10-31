@@ -1,14 +1,48 @@
 import { useEffect, useState } from "react";
 import Header from "./components/Header";
-import { DayOfWeek, UnitsDropdown } from "./components/Dropdown";
-import { fetchWeatherApi } from "openmeteo";
-const apiKey = import.meta.env.VITE_IPIFY_API_KEY;
+import { UnitsDropdown } from "./components/Dropdown";
+import { getCurrent, getWeeksData, getHourly, fetchWeatherInfo } from "./utils";
+import {
+  DailyForcast,
+  WeatherMain,
+  WeatherMore,
+  WeatherSidebar,
+} from "./components/parts";
+
+const baseUrl =
+  "https://api.open-meteo.com/v1/forecast?latitude=52.52&longitude=13.419998&daily=temperature_2m_max,temperature_2m_min&hourly=temperature_2m&current=temperature_2m,precipitation,wind_speed_10m,relative_humidity_2m,apparent_temperature&timezone=auto";
 
 const App = () => {
   const [theme, setTheme] = useState("dark");
   const [openUnits, setOpenUnits] = useState(false);
+  const [apiUrl, setApiUrl] = useState(baseUrl);
+  const [wispUnit, setWispUnit] = useState("");
+  const [tempUnit, setTempUnit] = useState("");
+  const [precUnit, setPrecUnit] = useState("");
   const [openDays, setOpenDays] = useState(false);
-  const [selectedDay, setSelectedDay] = useState("Monday");
+  const [selectedDay, setSelectedDay] = useState("");
+  const [weekData, setWeekData] = useState([]);
+  const [hourlyData, setHourlyData] = useState([]);
+  const [current, setCurrent] = useState({
+    date: "",
+    temperature: "",
+    det: [],
+  });
+
+  // useEffect(() => {
+  //   const setUrl = () => {
+  //     if (!wispUnit && !tempUnit && precUnit) {
+  //       setApiUrl(baseUrl);
+  //       return;
+  //     }
+  //     const wispStr = wispUnit ? `&wind_speed_unit=${wispUnit}` : "";
+  //     const tempStr = tempUnit ? `&temperature_unit=${tempUnit}` : "";
+  //     const precStr = precUnit ? `&precipitation_unit=${precUnit}` : "";
+  //     const newUrl = baseUrl + wispStr + tempStr + precStr;
+  //     setApiUrl(newUrl);
+  //   };
+  //   setUrl();
+  // }, [wispUnit, precUnit, tempUnit]);
 
   const retrieveUserPref = () => {
     if (localStorage.getItem("theme")) {
@@ -23,30 +57,23 @@ const App = () => {
     localStorage.setItem("theme", myTheme);
     setTheme(myTheme);
   };
-  // console.log(localStorage.getItem("theme"));
 
   useEffect(() => {
-    const useripurl = `https://geo.ipify.org/api/v2/country,city?apiKey=${apiKey}`;
-    const getData = async (url) => {
-      try {
-        const res = await fetch(url);
-        const data = await res.json();
-        console.log(data);
-        //  return data;
-      } catch (error) {
-        console.error(error);
-      }
-    };
     const getWeatherInfo = async () => {
-      const url =
-        "https://api.open-meteo.com/v1/forecast?latitude=5.5174&longitude=5.7501&daily=temperature_2m_max,temperature_2m_min&hourly=temperature_2m&current=precipitation,temperature_2m,relative_humidity_2m,wind_speed_10m&timezone=auto";
-      const responses = await fetch(url);
-      const data = await responses.json();
-      console.log(data);
+      const weatherInfo = await fetchWeatherInfo(`data.json`);
+      const { current, current_units, daily, hourly } = weatherInfo;
+      setCurrent(() => getCurrent(current, current_units));
+      setWeekData(() => getWeeksData(daily));
+      setHourlyData(() => getHourly(hourly));
     };
-    getData(useripurl);
-    // getWeatherInfo();
+    getWeatherInfo();
   }, []);
+
+  useEffect(()=>{
+    if (weekData.length) {
+      setSelectedDay(weekData[0][0]);
+    }
+  },[weekData])
 
   useEffect(() => {
     // const userThemePref = retrieveUserPref();
@@ -56,47 +83,7 @@ const App = () => {
     // console.log(bg)
   }, []);
 
-  const Fhwp = ({ text }) => {
-    return (
-      <div className="min-h-[70px] p-3 bg-neutral-800 ring ring-neutral-600 col-span-1 rounded-md ">
-        <p className="text-sm font-light">{text}</p>
-        <p className="text-lg mt-3">14 km/h</p>
-      </div>
-    );
-  };
-
-  const DailyForecast = ({ text }) => {
-    return (
-      <div className="min-h-[120px] px-2 py-1 ring ring-neutral-600 bg-neutral-800 flex flex-col justify-between col-span-1 rounded-md">
-        <p className="">{text}</p>
-        <img
-          src="/assets/images/icon-drizzle.webp"
-          alt="drizzle"
-          className=""
-        />
-        <div className="flex items-end justify-between">
-          <span className="le">20&deg;</span>
-          <span className="ri">24&deg;</span>
-        </div>
-      </div>
-    );
-  };
-
-  const HourlyForecast = ({ text }) => {
-    return (
-      <div className=" p-2 w-full bg-neutral-700 ring ring-neutral-600 flex items-center justify-between rounded-md">
-        <div className="flex items-center justify-start">
-          <img
-            src="/assets/images/icon-drizzle.webp"
-            alt="drizzle"
-            className="size-7"
-          />
-          <span className="le">{text}</span>
-        </div>
-        <span className="ri">24&deg;</span>
-      </div>
-    );
-  };
+  
 
   return (
     <div
@@ -110,7 +97,18 @@ const App = () => {
         setOpenUnits={setOpenUnits}
       />
       <main className="w-full flex flex-col items-center gap-7 relative mt-2 ">
-        {openUnits ? <UnitsDropdown /> : <></>}
+        {openUnits ? (
+          <UnitsDropdown
+            setPrecUnit={setPrecUnit}
+            setTempUnit={setTempUnit}
+            setWispUnit={setWispUnit}
+            precUnit={precUnit}
+            tempUnit={tempUnit}
+            wispUnit={wispUnit}
+          />
+        ) : (
+          <></>
+        )}
         <h1 className="text-4xl my-7">How's the sky looking today?</h1>
         <div className="search_component flex flex-col items-center w-1/2">
           <form className="flex items-center w-full">
@@ -151,89 +149,20 @@ const App = () => {
           </form>
           <div className="search_auto_res"></div>
         </div>
-        <div className="grid grid-cols-20 w-full gap-7">
-          <div className="main col-span-13 flex gap-6 flex-col">
-            <div className="weather-main rounded-lg flex items-center justify-between p-5 bg-neutral-700 min-h-[210px] bg-[url(/assets/images/bg-today-large.svg)] max-sm:bg-[url(/assets/images/bg-today-small.svg)] bg-cover">
-              <div className="lef">
-                <p className="place">Berlin</p>
-                <p className="date">Wed, Sept 9, 2025</p>
-              </div>
-              <div className="flex items-center justify-end">
-                <img
-                  src="/assets/images/icon-sunny.webp"
-                  alt="sunny"
-                  className="size-[80px]"
-                />
-                <span className="text-5xl">20&deg;</span>
-              </div>
-            </div>
-            <div className="fhwp grid grid-cols-4 gap-3">
-              {["Feel Like", "Humidity", "Wind", "Precipitation"].map(
-                (item) => (
-                  <Fhwp key={item} text={item} />
-                )
-              )}
-            </div>
-            <div className="daily-forecast">
-              <h4 className="text-xl">Daily forecast</h4>
-              <div className="fhwp grid grid-cols-7 gap-3">
-                {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(
-                  (item) => (
-                    <DailyForecast key={item} text={item} />
-                  )
-                )}
-              </div>
-            </div>
+        <div className="grid grid-cols-20 w-full gap-7 ">
+          <div className="main col-span-13 flex gap-6 flex-col h-[70%]">
+            <WeatherMain current={current} />
+            <WeatherMore current={current} />
+            <DailyForcast weekData={weekData} />
           </div>
-          <div className="sidebar col-span-7 relative bg-neutral-800 p-6 rounded-lg flex flex-col justify-evenly gap-2 ">
-            <div className="flex items-center justify-between">
-              <p className="hourly">Hourly forecast</p>
-              <button
-                onClick={() => setOpenDays(!openDays)}
-                type="button"
-                className="text-white bg-neutral-700 cursor-pointer focus:outline-none  font-medium rounded-md text-sm px-5 py-2.5 text-center inline-flex items-center "
-              >
-                {selectedDay}
-                <svg
-                  className="w-2.5 h-2.5 ms-3"
-                  aria-hidden="true"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 10 6"
-                >
-                  <path
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="m1 1 4 4 4-4"
-                  />
-                </svg>
-              </button>
-            </div>
-            {openDays ? (
-              <DayOfWeek
-                setSelectedDay={setSelectedDay}
-                setOpenDays={setOpenDays}
-              />
-            ) : (
-              <></>
-            )}
-            <>
-              {[
-                "3 PM",
-                "4 PM",
-                "5 PM",
-                "6 PM",
-                "7 PM",
-                "8 PM",
-                "9 PM",
-                "10 PM",
-              ].map((ite) => (
-                <HourlyForecast key={ite} text={ite} />
-              ))}
-            </>
-          </div>
+          <WeatherSidebar
+            setOpenDays={setOpenDays}
+            selectedDay={selectedDay}
+            openDays={openDays}
+            hourlyData={hourlyData}
+            setSelectedDay={setSelectedDay}
+            weekData={weekData}
+          />
         </div>
       </main>
     </div>
