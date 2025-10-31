@@ -1,7 +1,6 @@
-import { useEffect, useState, use } from "react";
+import { useEffect, use } from "react";
 import { WeatherInfoContext } from "./store/weatherInfoContext";
 import Header from "./components/Header";
-import { UnitsDropdown } from "./components/Dropdown";
 import { getCurrent, getWeeksData, getHourly, fetchWeatherInfo } from "./utils";
 import {
   DailyForcast,
@@ -10,41 +9,19 @@ import {
   WeatherSidebar,
 } from "./components/parts";
 
-const baseUrl =
-  "https://api.open-meteo.com/v1/forecast?latitude=52.52&longitude=13.419998&daily=temperature_2m_max,temperature_2m_min&hourly=temperature_2m&current=temperature_2m,precipitation,wind_speed_10m,relative_humidity_2m,apparent_temperature&timezone=auto";
-
 const App = () => {
-  const { theme, setTheme, apiUrl } = use(WeatherInfoContext);
+  const {
+    theme,
+    weekData,
+    setCurrent,
+    setWeekData,
+    setHourlyData,
+    setTheme,
+    setSelectedDay,
+    apiUrl,
+  } = use(WeatherInfoContext);
 
-  const [openUnits, setOpenUnits] = useState(false);
-  const [wispUnit, setWispUnit] = useState("");
-  const [tempUnit, setTempUnit] = useState("");
-  const [precUnit, setPrecUnit] = useState("");
-  const [openDays, setOpenDays] = useState(false);
-  const [selectedDay, setSelectedDay] = useState("");
-  const [weekData, setWeekData] = useState([]);
-  const [hourlyData, setHourlyData] = useState([]);
-  const [current, setCurrent] = useState({
-    date: "",
-    temperature: "",
-    det: [],
-  });
-
-  useEffect(() => console.log(apiUrl), []);
-  // useEffect(() => {
-  //   const setUrl = () => {
-  //     if (!wispUnit && !tempUnit && precUnit) {
-  //       setApiUrl(baseUrl);
-  //       return;
-  //     }
-  //     const wispStr = wispUnit ? `&wind_speed_unit=${wispUnit}` : "";
-  //     const tempStr = tempUnit ? `&temperature_unit=${tempUnit}` : "";
-  //     const precStr = precUnit ? `&precipitation_unit=${precUnit}` : "";
-  //     const newUrl = baseUrl + wispStr + tempStr + precStr;
-  //     setApiUrl(newUrl);
-  //   };
-  //   setUrl();
-  // }, [wispUnit, precUnit, tempUnit]);
+  
 
   const retrieveUserPref = () => {
     if (localStorage.getItem("theme")) {
@@ -62,14 +39,16 @@ const App = () => {
 
   useEffect(() => {
     const getWeatherInfo = async () => {
-      const weatherInfo = await fetchWeatherInfo(`data.json`);
+      const weatherInfo = await fetchWeatherInfo(apiUrl);
       const { current, current_units, daily, hourly } = weatherInfo;
-      setCurrent(() => getCurrent(current, current_units));
+      await setCurrent(() => getCurrent(current, current_units));
       setWeekData(() => getWeeksData(daily));
       setHourlyData(() => getHourly(hourly));
+      localStorage.setItem("hourly", JSON.stringify(hourly))
+      localStorage.setItem("daily", JSON.stringify(daily));
     };
     getWeatherInfo();
-  }, []);
+  }, [apiUrl]);
 
   useEffect(() => {
     if (weekData.length) {
@@ -90,25 +69,8 @@ const App = () => {
       data-theme={theme}
       className={`min-h-[100vh] text-col max-lg:w-[90%] lg:max-[1440px]:w-[85%] py-10 `}
     >
-      <Header
-        theme={theme}
-        switchTheme={switchTheme}
-        openUnits={openUnits}
-        setOpenUnits={setOpenUnits}
-      />
+      <Header />
       <main className="w-full flex flex-col items-center gap-7 relative mt-2 ">
-        {openUnits ? (
-          <UnitsDropdown
-            setPrecUnit={setPrecUnit}
-            setTempUnit={setTempUnit}
-            setWispUnit={setWispUnit}
-            precUnit={precUnit}
-            tempUnit={tempUnit}
-            wispUnit={wispUnit}
-          />
-        ) : (
-          <></>
-        )}
         <h1 className="text-4xl my-7">How's the sky looking today?</h1>
         <div className="search_component flex flex-col items-center w-1/2">
           <form className="flex items-center w-full">
@@ -151,18 +113,11 @@ const App = () => {
         </div>
         <div className="grid grid-cols-20 w-full gap-7 ">
           <div className="main col-span-13 flex gap-6 flex-col h-[70%]">
-            <WeatherMain current={current} />
-            <WeatherMore current={current} />
-            <DailyForcast weekData={weekData} />
+            <WeatherMain />
+            <WeatherMore />
+            <DailyForcast />
           </div>
-          <WeatherSidebar
-            setOpenDays={setOpenDays}
-            selectedDay={selectedDay}
-            openDays={openDays}
-            hourlyData={hourlyData}
-            setSelectedDay={setSelectedDay}
-            weekData={weekData}
-          />
+          <WeatherSidebar />
         </div>
       </main>
     </div>

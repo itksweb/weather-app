@@ -1,11 +1,14 @@
-import { useState } from "react";
+import { use } from "react";
+import { WeatherInfoContext } from "../store/weatherInfoContext";
+import { UnitsDropdown } from "./parts";
 
-const Header = ({openUnits, setOpenUnits, theme, switchTheme }) => {
-  
 
-  return (
-    <header className={`w-full flex justify-between items-start`}>
-      <img src={`/assets/images/logo.svg`} alt="weather app logo" />
+
+const Header = () => {
+  const { openUnits, setOpenUnits } = use(WeatherInfoContext);
+
+  const MyButton = () => {
+    return (
       <button
         onClick={() => setOpenUnits(!openUnits)}
         className="text-white bg-neutral-800 hover:bg-neutral-700  focus:outline-none  font-medium rounded-md text-sm px-5 py-2.5 text-center inline-flex items-center "
@@ -29,6 +32,17 @@ const Header = ({openUnits, setOpenUnits, theme, switchTheme }) => {
           />
         </svg>
       </button>
+    );
+  }
+
+  return (
+    <header className={`w-full relative`}>
+      <div className="w-full flex justify-between items-start">
+        <img src={`/assets/images/logo.svg`} alt="weather app logo" />
+        <MyButton />
+      </div>
+
+      {openUnits ? <UnitsDropdown /> : <></>}
     </header>
   );
 };

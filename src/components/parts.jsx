@@ -1,6 +1,148 @@
 import { getHourlyFromSelectedDay } from "../utils";
+import { use, useEffect, useRef } from "react";
+import { WeatherInfoContext } from "../store/weatherInfoContext";
 
-export const WeatherMain = ({ current }) => {
+const baseUrl =
+  "https://api.open-meteo.com/v1/forecast?latitude=52.52&longitude=13.419998&daily=temperature_2m_max,temperature_2m_min&hourly=temperature_2m&current=temperature_2m,precipitation,wind_speed_10m,relative_humidity_2m,apparent_temperature&timezone=auto";
+
+export const UnitsDropdown = ({}) => {
+  const dropdownRef = useRef(null);
+  const {
+    setPrecUnit,
+    setWispUnit,
+    setTempUnit,
+    precUnit,
+    wispUnit,
+    tempUnit,
+    setApiUrl,
+    setOpenUnits
+  } = use(WeatherInfoContext);
+
+  useEffect(() => {
+    const setUrl = () => {
+      if (!wispUnit && !tempUnit && precUnit) {
+        setApiUrl(baseUrl);
+        return;
+      }
+      const wispStr = wispUnit ? `&wind_speed_unit=${wispUnit}` : "";
+      const tempStr = tempUnit ? `&temperature_unit=${tempUnit}` : "";
+      const precStr = precUnit ? `&precipitation_unit=${precUnit}` : "";
+      const newUrl = baseUrl + wispStr + tempStr + precStr;
+      setApiUrl(newUrl);
+    };
+    setUrl();
+  }, [wispUnit, precUnit, tempUnit]);
+
+  const handleUnitSwitch = (e) => {
+    if (e.target.value === "METRIC") {
+      setPrecUnit("");
+      setTempUnit("");
+      setWispUnit("");
+    } else if (e.target.value === "IMPERIAL") {
+      setPrecUnit("inch");
+      setTempUnit("fahrenheit");
+      setWispUnit("mph");
+    }
+  };
+
+  const handleClickOutside = (e) => {
+    if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+      setOpenUnits(false);
+    }
+  };
+
+   useEffect(() => {
+     document.addEventListener("mousedown", handleClickOutside);
+     return () => {
+       document.removeEventListener("mousedown", handleClickOutside);
+     };
+   }, [dropdownRef]);
+
+  const SwitchButton = ({ title }) => {
+    return (
+      <button
+        onClick={handleUnitSwitch}
+        value={title}
+        className="switch font-bold p-1.5 text-[12px] bg-neutral-700 hover:bg-neutral-600 rounded-sm"
+      >
+        {title}
+      </button>
+    );
+  };
+
+  const UnitSection = ({ title, cls, children }) => {
+    return (
+      <div className={cls ? cls : ""}>
+        <h4 className="text-sm text-neutral-300">{title} </h4>
+        {children}
+      </div>
+    );
+  };
+
+  const Unit = ({ text, value, func, recvd }) => {
+    return (
+      <button
+        type="button"
+        onClick={() => func(value)}
+        className={`flex w-full items-center justify-between cursor-pointer py-1 px-2 rounded-md hover:bg-neutral-700 ${
+          recvd === value ? "bg-neutral-700 rounded-sm" : ""
+        }`}
+      >
+        <span className="text-neutral-0 text-sm">{text}</span>
+        <img
+          src={`/assets/images/icon-checkmark.svg`}
+          alt="checkmark icon"
+          className={recvd === value ? "" : "hidden"}
+        />
+      </button>
+    );
+  };
+
+  return (
+    <div ref={dropdownRef} className="z-10 space-y-3 bg-neutral-800 mt-2 ring ring-neutral-600 p-2 rounded-md shadow-sm w-46 absolute right-0 ">
+      <div className="grid grid-cols-2 gap-2 ">
+        <SwitchButton title="IMPERIAL" />
+        <SwitchButton title="METRIC" />
+      </div>
+      <UnitSection title="Temperature" cls="pb-2 border-b border-b-neutral-600">
+        <Unit
+          value=""
+          func={setTempUnit}
+          recvd={tempUnit}
+          text="Celcius (&deg;C)"
+        />
+
+        <Unit
+          value="fahrenheit"
+          func={setTempUnit}
+          recvd={tempUnit}
+          text="Fahrenheit (&deg;F)"
+        />
+      </UnitSection>
+      <UnitSection title="Wind speed" cls="pb-2 border-b border-b-neutral-600">
+        <Unit value="" func={setWispUnit} recvd={wispUnit} text="km/h" />
+        <Unit value="mph" func={setWispUnit} recvd={wispUnit} text="mph" />
+      </UnitSection>
+      <UnitSection title="Precipitation">
+        <Unit
+          value=""
+          func={setPrecUnit}
+          recvd={precUnit}
+          text="Millimeters (mm)"
+        />
+        <Unit
+          value="inch"
+          func={setPrecUnit}
+          recvd={precUnit}
+          text="Inches (in)"
+        />
+      </UnitSection>
+    </div>
+  );
+};
+
+export const WeatherMain = () => {
+  const { current } = use(WeatherInfoContext);
   return (
     <div className="weather-main rounded-lg flex items-center justify-between p-5 bg-neutral-700 min-h-[210px] bg-[url(/assets/images/bg-today-large.svg)] max-sm:bg-[url(/assets/images/bg-today-small.svg)] bg-cover">
       <div className="lef">
@@ -19,7 +161,8 @@ export const WeatherMain = ({ current }) => {
   );
 };
 
-export const WeatherMore = ({ current }) => {
+export const WeatherMore = () => {
+  const { current } = use(WeatherInfoContext);
   return (
     <div className="grid grid-cols-4 gap-3">
       {current.det.map((item) => {
@@ -37,7 +180,9 @@ export const WeatherMore = ({ current }) => {
   );
 };
 
-export const DailyForcast = ({ weekData }) => {
+export const DailyForcast = () => {
+  const { weekData } = use(WeatherInfoContext);
+
   return (
     <div className="">
       <h4 className="text-xl">Daily forecast</h4>
@@ -66,7 +211,8 @@ export const DailyForcast = ({ weekData }) => {
   );
 };
 
-const ButtonWithIcon = ({ setOpenDays, openDays, selectedDay }) => {
+const ButtonWithIcon = () => {
+  const { setOpenDays, openDays, selectedDay } = use(WeatherInfoContext);
   return (
     <button
       onClick={() => setOpenDays(!openDays)}
@@ -93,27 +239,44 @@ const ButtonWithIcon = ({ setOpenDays, openDays, selectedDay }) => {
   );
 };
 
-const SidebarHead = ({ setOpenDays, selectedDay, openDays }) => {
+const SidebarHead = () => {
+  const { setOpenDays, openDays, selectedDay } = use(WeatherInfoContext);
   return (
     <div className="flex items-center justify-between">
       <p className="hourly">Hourly forecast</p>
-      <ButtonWithIcon
-        setOpenDays={setOpenDays}
-        selectedDay={selectedDay}
-        openDays={openDays}
-      />
+      <ButtonWithIcon />
     </div>
   );
 };
 
-const DaysDropdown = ({ setSelectedDay, setOpenDays, weekData }) => {
+const DaysDropdown = () => {
+  const daysDropdownRef = useRef(null);
+  const { setSelectedDay, setOpenDays, weekData, setHourlyData } =
+    use(WeatherInfoContext);
+
   const handleClick = (day, index) => {
     setSelectedDay(day);
-    getHourlyFromSelectedDay(index, daily, hourly)
+    setHourlyData(getHourlyFromSelectedDay(index));
     setOpenDays(false);
   };
+
+  const handleClickOutside = (e) => {
+    if (daysDropdownRef.current && !daysDropdownRef.current.contains(e.target)) {
+      setOpenDays(false);
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [daysDropdownRef]);
+
+
+
   return (
-    <div className="z-10 grid gap-3 bg-neutral-800 ring ring-neutral-600 p-2 rounded-md shadow-sm w-40 absolute right-0 ">
+    <div ref={daysDropdownRef} className="z-10 grid gap-3 bg-neutral-800 ring ring-neutral-600 p-2 rounded-md shadow-sm w-40 absolute right-0 ">
       {weekData.map((it, index) => (
         <button
           onClick={() => handleClick(it[0], index)}
@@ -143,16 +306,17 @@ const HourlyUnit = ({ item }) => {
   );
 };
 
-export const WeatherSidebar = ({
-  setOpenDays,
-  selectedDay,
-  openDays,
-  setSelectedDay,
-  weekData,
-  hourlyData,
-}) => {
+export const WeatherSidebar = () => {
+  const {
+    setOpenDays,
+    selectedDay,
+    openDays,
+    setSelectedDay,
+    weekData,
+    hourlyData,
+  } = use(WeatherInfoContext);
   return (
-    <div className="vert-scroll sidebar col-span-7 relative overflow-y-scroll h-[550px] bg-neutral-800 p-6 rounded-lg flex flex-col justify-evenly gap-2 ">
+    <div className="vert-scroll sidebar col-span-7 relative overflow-y-scroll h-[550px] bg-neutral-800 p-6 rounded-lg flex flex-col justify-start gap-2 ">
       <SidebarHead
         setOpenDays={setOpenDays}
         selectedDay={selectedDay}

@@ -69,7 +69,9 @@ export const getHourly = (hourly) => {
   return hrly;
 };
 
-export const getHourlyFromSelectedDay = (i, daily, hourly) => {
+export const getHourlyFromSelectedDay = (i) => {
+  const hourly = JSON.parse(localStorage.getItem("hourly"));
+  const daily = JSON.parse(localStorage.getItem("daily"));
   let hrly = [];
   for (let index = 0; index < hourly.time.length; index++) {
     const item = hourly.time[index];
