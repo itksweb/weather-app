@@ -1,9 +1,54 @@
-import { getHourlyFromSelectedDay } from "../utils";
+import {
+  createRandomArrayWithUniqueStrings,
+  getHourlyFromSelectedDay,
+  notIt,
+  baseUrl,
+} from "../utils";
 import { use, useEffect, useRef } from "react";
 import { WeatherInfoContext } from "../store/weatherInfoContext";
 
-const baseUrl =
-  "https://api.open-meteo.com/v1/forecast?latitude=52.52&longitude=13.419998&daily=temperature_2m_max,temperature_2m_min&hourly=temperature_2m&current=temperature_2m,precipitation,wind_speed_10m,relative_humidity_2m,apparent_temperature&timezone=auto";
+
+const MyIcon = ({ icon, cls }) => {
+  return (
+    <img
+      src={`/assets/images/icon-${icon}.svg`}
+      alt={icon}
+      className={cls ? cls : ""}
+    />
+  );
+};
+
+export const ButtonWithIcon = ({ action, text, alt1 = "", alt2 = "" }) => {
+  return (
+    <button
+      onClick={action}
+      type="button"
+      className="text-white bg-neutral-700 cursor-pointer focus:outline-none  font-medium rounded-md text-sm px-5 py-2.5 text-center inline-flex items-center gap-1.5 "
+    >
+      {alt1 && <MyIcon icon={alt1} />}
+      {text}
+      {alt2 && <MyIcon icon={alt2} />}
+    </button>
+  );
+};
+
+export const Header = () => {
+  const { openUnits, setOpenUnits } = use(WeatherInfoContext);
+  return (
+    <header className={`w-full relative`}>
+      <div className="w-full flex justify-between items-start">
+        <img src={`/assets/images/logo.svg`} alt="weather app logo" />
+        <ButtonWithIcon
+          text="Units"
+          action={() => setOpenUnits((prev) => !prev)}
+          alt1="units"
+          alt2="dropdown"
+        />
+      </div>
+      {openUnits ? <UnitsDropdown /> : <></>}
+    </header>
+  );
+};
 
 export const UnitsDropdown = ({}) => {
   const dropdownRef = useRef(null);
@@ -165,17 +210,19 @@ export const WeatherMain = () => {
 };
 
 export const WeatherMore = () => {
-  const { current } = use(WeatherInfoContext);
+  const { current, isLoading } = use(WeatherInfoContext);
+  const data = isLoading ? notIt : current.det;
+
   return (
     <div className="grid grid-cols-4 gap-3">
-      {current.det.map((item) => {
+      {data.map((item, index) => {
         return (
           <div
-            key={item[0]}
+            key={isLoading ? item : item[0]}
             className="min-h-[70px] p-3 bg-neutral-800 ring ring-neutral-600 col-span-1 rounded-md "
           >
-            <p className="text-sm font-light">{item[0]}</p>
-            <p className="text-lg mt-3">{item[1]}</p>
+            <p className="text-sm font-light">{notIt[index]}</p>
+            <p className="text-lg mt-3">{isLoading ? "__" : item[1]}</p>
           </div>
         );
       })}
@@ -183,58 +230,41 @@ export const WeatherMore = () => {
   );
 };
 
-export const DailyForcast = () => {
-  const { weekData } = use(WeatherInfoContext);
-
+const DailyForcastUnit = ({ item, isLoading }) => {
+  if (isLoading) {
+    return (
+      <div className=" min-h-[120px] px-2 py-1 ring ring-neutral-600 bg-neutral-800 rounded-md"></div>
+    );
+  }
   return (
-    <div className="">
-      <h4 className="text-xl mb-2">Daily forecast</h4>
-      <div className="grid grid-cols-7 gap-3">
-        {weekData.map((item) => {
-          return (
-            <div
-              key={item[0]}
-              className="min-h-[120px] px-2 py-1 ring ring-neutral-600 bg-neutral-800 flex flex-col justify-between col-span-1 rounded-md"
-            >
-              <p className="">{item[0].slice(0, 3)}</p>
-              <img
-                src="/assets/images/icon-drizzle.webp"
-                alt="drizzle"
-                className=""
-              />
-              <div className="flex items-end justify-between text-[14px]">
-                <span className="le">{item[1]}&deg;</span>
-                <span className="ri">{item[2]}&deg;</span>
-              </div>
-            </div>
-          );
-        })}
+    <div className="min-h-[120px] px-2 py-1 ring ring-neutral-600 bg-neutral-800 flex flex-col justify-between col-span-1 rounded-md">
+      <p className="">{item[0].slice(0, 3)}</p>
+      <img src="/assets/images/icon-drizzle.webp" alt="drizzle" className="" />
+      <div className="flex items-end justify-between text-[14px]">
+        <span className="le">{item[1]}&deg;</span>
+        <span className="ri">{item[2]}&deg;</span>
       </div>
     </div>
   );
 };
 
-const MyIcon = ({ icon, cls }) => {
-  return (
-    <img
-      src={`/assets/images/icon-${icon}.svg`}
-      alt={icon}
-      className={cls ? cls : ""}
-    />
-  );
-};
+export const DailyForcast = () => {
+  const { weekData, isLoading } = use(WeatherInfoContext);
+  const data = isLoading ? createRandomArrayWithUniqueStrings(7) : weekData;
 
-export const ButtonWithIcon = ({ action, text, alt1 = "", alt2 = "" }) => {
   return (
-    <button
-      onClick={action}
-      type="button"
-      className="text-white bg-neutral-700 cursor-pointer focus:outline-none  font-medium rounded-md text-sm px-5 py-2.5 text-center inline-flex items-center gap-1.5 "
-    >
-      {alt1 && <MyIcon icon={alt1} />}
-      {text}
-      {alt2 && <MyIcon icon={alt2} />}
-    </button>
+    <div className="">
+      <h4 className="text-xl mb-2">Daily forecast</h4>
+      <div className="grid grid-cols-7 gap-3">
+        {data.map((item) => (
+          <DailyForcastUnit
+            key={isLoading ? item : item[0]}
+            item={item}
+            isLoading={isLoading}
+          />
+        ))}
+      </div>
+    </div>
   );
 };
 
@@ -324,10 +354,12 @@ export const WeatherSidebar = () => {
     setOpenDays,
     selectedDay,
     openDays,
+    isLoading,
     setSelectedDay,
     weekData,
     hourlyData,
   } = use(WeatherInfoContext);
+  const data = isLoading ? createRandomArrayWithUniqueStrings(8) : hourlyData;
   return (
     <div className="vert-scroll sidebar col-span-7 relative overflow-y-scroll h-[550px] bg-neutral-800 p-6 rounded-lg flex flex-col justify-start gap-2 ">
       <SidebarHead
@@ -343,8 +375,8 @@ export const WeatherSidebar = () => {
         />
       )}
       <>
-        {hourlyData.map((item) => (
-          <HourlyUnit key={item[0]} item={item} />
+        {data.map((item) => (
+          <HourlyUnit key={isLoading ? item : item[0]} item={item} />
         ))}
       </>
     </div>

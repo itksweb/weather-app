@@ -1,8 +1,6 @@
 import { useState } from "react";
 import { WeatherInfoContext } from "./weatherInfoContext";
-
-const baseUrl =
-  "https://api.open-meteo.com/v1/forecast?latitude=52.52&longitude=13.419998&daily=temperature_2m_max,temperature_2m_min&hourly=temperature_2m&current=temperature_2m,precipitation,wind_speed_10m,relative_humidity_2m,apparent_temperature&timezone=auto";
+import { baseUrl } from "../utils";
 
 export const WeatherInfoProvider = ({ children }) => {
   const [theme, setTheme] = useState("dark");
@@ -16,7 +14,7 @@ export const WeatherInfoProvider = ({ children }) => {
   const [weekData, setWeekData] = useState([]);
   const [hourlyData, setHourlyData] = useState([]);
   const [isError, setIsError] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [current, setCurrent] = useState({
     date: "",
     temperature: "",

@@ -1,6 +1,5 @@
 import { useEffect, use } from "react";
 import { WeatherInfoContext } from "./store/weatherInfoContext";
-import Header from "./components/Header";
 import { getCurrent, getWeeksData, getHourly, fetchWeatherInfo } from "./utils";
 import {
   DailyForcast,
@@ -9,6 +8,7 @@ import {
   WeatherMain,
   WeatherMore,
   WeatherSidebar,
+  Header
 } from "./components/parts";
 
 const App = () => {
@@ -29,13 +29,20 @@ const App = () => {
 
   useEffect(() => {
     const getWeatherInfo = async () => {
-      const weatherInfo = await fetchWeatherInfo(apiUrl);
-      const { current, current_units, daily, hourly } = weatherInfo;
-      await setCurrent(() => getCurrent(current, current_units));
-      setWeekData(() => getWeeksData(daily));
-      setHourlyData(() => getHourly(hourly));
-      localStorage.setItem("hourly", JSON.stringify(hourly));
-      localStorage.setItem("daily", JSON.stringify(daily));
+      try {
+        setIsLoading(true)
+        const weatherInfo = await fetchWeatherInfo(apiUrl);
+        const { current, current_units, daily, hourly } = weatherInfo;
+        await setCurrent(() => getCurrent(current, current_units));
+        setWeekData(() => getWeeksData(daily));
+        setHourlyData(() => getHourly(hourly));
+        setIsLoading(false)
+        localStorage.setItem("hourly", JSON.stringify(hourly));
+        localStorage.setItem("daily", JSON.stringify(daily));
+      } catch (error) {
+        setIsError(true)
+        console.log(error)
+      }
     };
     getWeatherInfo();
   }, [apiUrl]);

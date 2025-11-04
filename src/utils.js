@@ -1,3 +1,6 @@
+export const baseUrl =
+  "https://api.open-meteo.com/v1/forecast?latitude=52.52&longitude=13.419998&daily=temperature_2m_max,temperature_2m_min&hourly=temperature_2m&current=temperature_2m,precipitation,wind_speed_10m,relative_humidity_2m,apparent_temperature&timezone=auto";
+
 export const formatDate = (dateString) => {
   const date = new Date(dateString);
   return date.toLocaleDateString("en-US", {
@@ -92,3 +95,26 @@ export const fetchWeatherInfo = async (url) => {
   console.log("done ",data)
   return data;
 };
+
+export const createRandomArray = (length, min = 1, max = 9) => {
+  return Array.from(
+    { length: length },
+    () => Math.floor(Math.random() * (max - min + 1)) + min
+  );
+}
+
+export const createRandomArrayWithUniqueStrings = (count, length = 6) => {
+  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  const set = new Set();
+  while (set.size < count) {
+    let str = '';
+    for (let i = 0; i < length; i++) {
+      str += chars[Math.floor(Math.random() * chars.length)];
+    }
+    set.add(str);
+  }
+
+  return Array.from(set);
+}
+
+export const notIt = [ "Feels Like", "Humidity", "Wind", "Precipitation"];
