@@ -15,6 +15,8 @@ export const WeatherInfoProvider = ({ children }) => {
   const [selectedDay, setSelectedDay] = useState("");
   const [weekData, setWeekData] = useState([]);
   const [hourlyData, setHourlyData] = useState([]);
+  const [isError, setIsError] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [current, setCurrent] = useState({
     date: "",
     temperature: "",
@@ -44,6 +46,10 @@ export const WeatherInfoProvider = ({ children }) => {
     setTempUnit,
     wispUnit,
     setWispUnit,
+    isError,
+    setIsError,
+    isLoading,
+    setIsLoading,
   };
   return (
     <WeatherInfoContext.Provider value={{ ...value }}>

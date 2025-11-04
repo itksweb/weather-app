@@ -10,7 +10,7 @@ export const formatDate = (dateString) => {
 
 export const getWeekDayShort = (dateString) => {
   const date = new Date(dateString);
-  return date.toLocaleDateString("en-US", { weekday: "short" });
+  return date.toLocaleDateString("en-US", { weekday: "long" });
 };
 
 export const getHourlyTime = (dateString) => {

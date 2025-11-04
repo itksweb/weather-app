@@ -196,7 +196,7 @@ export const DailyForcast = () => {
               key={item[0]}
               className="min-h-[120px] px-2 py-1 ring ring-neutral-600 bg-neutral-800 flex flex-col justify-between col-span-1 rounded-md"
             >
-              <p className="">{item[0]}</p>
+              <p className="">{item[0].slice(0, 3)}</p>
               <img
                 src="/assets/images/icon-drizzle.webp"
                 alt="drizzle"
@@ -214,40 +214,40 @@ export const DailyForcast = () => {
   );
 };
 
-const ButtonWithIcon = () => {
-  const { setOpenDays, openDays, selectedDay } = use(WeatherInfoContext);
+const MyIcon = ({ icon, cls }) => {
+  return (
+    <img
+      src={`/assets/images/icon-${icon}.svg`}
+      alt={icon}
+      className={cls ? cls : ""}
+    />
+  );
+};
+
+export const ButtonWithIcon = ({ action, text, alt1 = "", alt2 = "" }) => {
   return (
     <button
-      onClick={() => setOpenDays(!openDays)}
+      onClick={action}
       type="button"
-      className="text-white bg-neutral-700 cursor-pointer focus:outline-none  font-medium rounded-md text-sm px-5 py-2.5 text-center inline-flex items-center "
+      className="text-white bg-neutral-700 cursor-pointer focus:outline-none  font-medium rounded-md text-sm px-5 py-2.5 text-center inline-flex items-center gap-1.5 "
     >
-      {selectedDay}
-      <svg
-        className="w-2.5 h-2.5 ms-3"
-        aria-hidden="true"
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 10 6"
-      >
-        <path
-          stroke="currentColor"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="2"
-          d="m1 1 4 4 4-4"
-        />
-      </svg>
+      {alt1 && <MyIcon icon={alt1} />}
+      {text}
+      {alt2 && <MyIcon icon={alt2} />}
     </button>
   );
 };
 
 const SidebarHead = () => {
-  const { setOpenDays, openDays, selectedDay } = use(WeatherInfoContext);
+  const { setOpenDays, selectedDay } = use(WeatherInfoContext);
   return (
     <div className="flex items-center justify-between">
       <p className="hourly">Hourly forecast</p>
-      <ButtonWithIcon />
+      <ButtonWithIcon
+        action={() => setOpenDays((prev) => !prev)}
+        text={selectedDay}
+        alt2="dropdown"
+      />
     </div>
   );
 };
@@ -298,6 +298,12 @@ const DaysDropdown = () => {
 };
 
 const HourlyUnit = ({ item }) => {
+  const { isLoading } = use(WeatherInfoContext);
+  if (isLoading) {
+    return (
+      <div className=" p-5 w-full bg-neutral-700 ring ring-neutral-600 rounded-md"></div>
+    );
+  }
   return (
     <div className=" p-2 w-full bg-neutral-700 ring ring-neutral-600 flex items-center justify-between rounded-md">
       <div className="flex items-center justify-start">
@@ -342,5 +348,62 @@ export const WeatherSidebar = () => {
         ))}
       </>
     </div>
+  );
+};
+
+export const SearchBar = () => {
+  return (
+    <div className="search_component flex flex-col items-center w-1/2">
+      <form className="flex items-center w-full">
+        <label htmlFor="simple-search" className="sr-only">
+          Search
+        </label>
+        <div className="relative w-full">
+          <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+            <svg
+              className="w-4 h-4"
+              aria-hidden="true"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 20 20"
+            >
+              <path
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"
+              />
+            </svg>
+          </div>
+          <input
+            type="text"
+            placeholder="Search for a place..."
+            required
+            className="bg-neutral-800 hover:bg-neutral-700 focus:border text-neutral-200 text-sm rounded-lg focus:ring-neutral-200 focus:border-neutral-200 block w-full ps-10 p-2.5  "
+          />
+        </div>
+        <button
+          type="submit"
+          className="p-2.5 ms-2 text-sm font-medium text-neutral-0 bg-blue-500 rounded-lg  hover:bg-blue-700 focus:border focus:ring-blue-500 focus:border-blue-500 "
+        >
+          Search
+        </button>
+      </form>
+      <div className="search_auto_res"></div>
+    </div>
+  );
+};
+
+export const ErrorComponenet = () => {
+  return (
+    <main className="w-[600px] flex flex-col gap-4 items-center relative mt-9">
+      <MyIcon icon="error" cls="w-[35px]" />
+      <h1 className="text-4xl">Something went wrong</h1>
+      <p className="">
+        We couldn't connect to the server (API error). Please try again later.
+      </p>
+      <ButtonWithIcon action={() => {}} text="retry" alt1="retry" />
+    </main>
   );
 };
