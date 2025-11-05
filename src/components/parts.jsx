@@ -4,9 +4,8 @@ import {
   notIt,
   baseUrl,
 } from "../utils";
-import { use, useEffect, useRef } from "react";
+import { use, useEffect, useRef, useState } from "react";
 import { WeatherInfoContext } from "../store/weatherInfoContext";
-
 
 const MyIcon = ({ icon, cls }) => {
   return (
@@ -50,7 +49,7 @@ export const Header = () => {
   );
 };
 
-export const UnitsDropdown = ({}) => {
+export const UnitsDropdown = () => {
   const dropdownRef = useRef(null);
   const {
     setPrecUnit,
@@ -190,7 +189,15 @@ export const UnitsDropdown = ({}) => {
 };
 
 export const WeatherMain = () => {
-  const { current } = use(WeatherInfoContext);
+  const { current, isLoading } = use(WeatherInfoContext);
+  if (isLoading) {
+    return (
+      <div className="rounded-lg gap-5 flex items-center justify-center flex-col p-5 bg-neutral-700 min-h-[210px]">
+        <MyIcon icon="loading" />
+        <p>Loading ...</p>
+      </div>
+    );
+  }
   return (
     <div className="weather-main rounded-lg flex items-center justify-between p-5 bg-neutral-700 min-h-[210px] bg-[url(/assets/images/bg-today-large.svg)] max-sm:bg-[url(/assets/images/bg-today-small.svg)] bg-cover">
       <div className="lef">
@@ -384,35 +391,54 @@ export const WeatherSidebar = () => {
 };
 
 export const SearchBar = () => {
+  const [searchText, setSearchText] = useState("");
+  const [searching, setSearching] = useState(false);
+  const { likelyLocations, setLikelyLocations } = use(WeatherInfoContext);
+
+  const handleInputChange = (e) => {
+    setSearchText(e.target.value);
+  };
+
+  useEffect(() => {
+    if (searchText.trim().length >= 5) {
+      const urll = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(
+        searchText
+      )}&count=5&language=en&format=json`;
+      const geolocate = async () => {
+        try {
+          setSearching(true);
+          const response = await fetch(urll);
+          if (!response.ok) {
+            throw new Error("Failed to search locations");
+          }
+          const data = await response.json();
+          console.log(" here ", data.results);
+          setLikelyLocations([...data]);
+          setSearching(false);
+        } catch (error) {
+          console.log(error);
+        }
+      };
+      geolocate();
+    }
+  }, [searchText]);
+
   return (
     <div className="search_component flex flex-col items-center w-1/2">
       <form className="flex items-center w-full">
         <label htmlFor="simple-search" className="sr-only">
           Search
         </label>
-        <div className="relative w-full">
-          <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
-            <svg
-              className="w-4 h-4"
-              aria-hidden="true"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 20 20"
-            >
-              <path
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"
-              />
-            </svg>
-          </div>
+        <div className="w-full flex items-center bg-neutral-800 hover:bg-neutral-700 focus:border text-neutral-200 text-sm rounded-lg focus:ring-neutral-200 focus:border-neutral-200 p-2.5 ">
+          <MyIcon icon="search" />
           <input
             type="text"
+            value={searchText}
+            onChange={handleInputChange}
             placeholder="Search for a place..."
+            id="simple-search"
             required
-            className="bg-neutral-800 hover:bg-neutral-700 focus:border text-neutral-200 text-sm rounded-lg focus:ring-neutral-200 focus:border-neutral-200 block w-full ps-10 p-2.5  "
+            className=" focus:ring-0 w-full p-1 outline-0 "
           />
         </div>
         <button
@@ -422,7 +448,33 @@ export const SearchBar = () => {
           Search
         </button>
       </form>
-      <div className="search_auto_res"></div>
+      {searchText && (
+        <SearchResults
+          searching={searching}
+          likelyLocations={likelyLocations}
+        />
+      )}
+    </div>
+  );
+};
+
+const SearchResults = ({ searching, likelyLocations }) => {
+  if (searching) {
+    return (
+      <div className="w-full flex items-center bg-neutral-800 hover:bg-neutral-700 focus:border text-neutral-200 text-sm rounded-lg focus:ring-neutral-200 focus:border-neutral-200 p-2.5 ">
+        <MyIcon icon="search" />
+        <p>Search in progress</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full flex flex-col items-center bg-neutral-800 hover:bg-neutral-700 focus:border text-neutral-200 text-sm rounded-lg focus:ring-neutral-200 focus:border-neutral-200 p-2.5 ">
+      {likelyLocations.map((item) => (
+        <p key={item.id} className="">
+          {item.name}
+        </p>
+      ))}
     </div>
   );
 };

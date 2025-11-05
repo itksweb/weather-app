@@ -68,8 +68,9 @@ const App = () => {
       className={`min-h-[100vh] text-col max-lg:w-[90%] lg:max-[1440px]:w-[85%] py-10 flex flex-col items-center`}
     >
       <Header />
-      {isError && <ErrorComponenet />}
-      {!isError && (
+      {isError ? (
+        <ErrorComponenet />
+      ) : (
         <main className="w-full flex flex-col items-center gap-7 relative mt-2 ">
           <h1 className="text-4xl my-7">How's the sky looking today?</h1>
           <SearchBar />
