@@ -26,7 +26,7 @@ export const getHourlyTime = (dateString) => {
   return ttt.replace(":00", "");
 };
 
-export const getCurrent = (current, current_units, timezone) => {
+export const getCurrent = (current, current_units) => {
   const feelsLike =
     current.apparent_temperature + current_units.apparent_temperature;
   const humidity =
@@ -34,11 +34,9 @@ export const getCurrent = (current, current_units, timezone) => {
   const wind = current.wind_speed_10m + ` ${current_units.wind_speed_10m}`;
   const precipitation =
     current.precipitation + ` ${current_units.precipitation}`;
-  const location = timezone.replace("/", ", ")
   return {
     date: formatDate(current.time),
     temperature: current.temperature_2m,
-    location,
     det: [
       ["Feels Like", feelsLike],
       ["Humidity", humidity],

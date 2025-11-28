@@ -17,37 +17,29 @@ const MyIcon = ({ icon, cls }) => {
   );
 };
 
-export const ButtonWithIcon = ({
-  id,
-  cls,
-  action,
-  text,
-  alt1 = "",
-  alt2 = "",
-}) => {
+export const ButtonWithIcon = ({ action, text, alt1 = "", alt2 = "" }) => {
   return (
     <button
-      id={id ? id : ""}
       onClick={action}
       type="button"
       className="text-white bg-neutral-700 cursor-pointer focus:outline-none  font-medium rounded-md text-sm px-5 py-2.5 text-center inline-flex items-center gap-1.5 "
     >
-      {alt1 && <MyIcon cls={cls} icon={alt1} />}
+      {alt1 && <MyIcon icon={alt1} />}
       {text}
-      {alt2 && <MyIcon cls={cls} icon={alt2} />}
+      {alt2 && <MyIcon icon={alt2} />}
     </button>
   );
 };
 
 export const Header = () => {
   const { openUnits, setOpenUnits } = use(WeatherInfoContext);
+  useEffect(() => console.log(openUnits), [openUnits]);
   const dropdownRef = useRef(null);
   const handleClickOutside = (e) => {
-    const notBtn = e.target.id !== "dont" && e.target.className !== "inBtn";
     if (
       dropdownRef.current &&
       !dropdownRef.current.contains(e.target) &&
-      notBtn
+      openUnits
     ) {
       setOpenUnits(false);
     }
@@ -63,17 +55,19 @@ export const Header = () => {
   return (
     <header className={`w-full relative`}>
       <div className="w-full flex justify-between items-start">
-        <img src={`/assets/images/logo.svg`} alt="weather app logo" />
+        <img
+          src={`/assets/images/logo.svg`}
+          alt="weather app logo"
+          className="w-[40%] h-auto "
+        />
         <ButtonWithIcon
           text="Units"
-          action={() => setOpenUnits((prev) => !prev)}
+          action={() => setOpenUnits(!openUnits)}
           alt1="units"
           alt2="dropdown"
-          id="dont"
-          cls="inBtn"
         />
       </div>
-      {openUnits ? <UnitsDropdown ref={dropdownRef} /> : <></>}
+      {openUnits && <UnitsDropdown ref={dropdownRef} />}
     </header>
   );
 };
@@ -87,8 +81,8 @@ export const UnitsDropdown = ({ ref }) => {
     wispUnit,
     tempUnit,
     setApiUrl,
-    setOpenUnits,
   } = use(WeatherInfoContext);
+  
 
   useEffect(() => {
     const setUrl = () => {
@@ -213,10 +207,11 @@ export const WeatherMain = () => {
       </div>
     );
   }
+  
   return (
     <div className="weather-main rounded-lg max-xs:flex-col flex items-center justify-between p-5 bg-neutral-700 min-h-[210px] bg-[url(/assets/images/bg-today-large.svg)] max-sm:bg-[url(/assets/images/bg-today-small.svg)] bg-cover">
       <div className="lef flex flex-col items-start max-xs:items-center">
-        <p className="place">{current.location}</p>
+        <p className="place">Warri</p>
         <p className="date">{current.date}</p>
       </div>
       <div className="rig flex items-center justify-end">
@@ -240,6 +235,7 @@ export const WeatherMore = () => {
       {data.map((item, index) => {
         return (
           <div
+            key={isLoading ? item : item[0]}
             key={isLoading ? item : item[0]}
             className="min-h-[70px] p-3 bg-neutral-800 ring ring-neutral-600 col-span-1 rounded-md "
           >
@@ -294,6 +290,7 @@ export const DailyForcast = () => {
 
 const SidebarHead = () => {
   const { setOpenDays, selectedDay } = use(WeatherInfoContext);
+  
   return (
     <div className="flex items-center justify-between">
       <p className="hourly">Hourly forecast</p>
@@ -358,6 +355,7 @@ const HourlyUnit = ({ item }) => {
       <div className=" p-5 w-full bg-neutral-700 ring ring-neutral-600 rounded-md"></div>
     );
   }
+  
   return (
     <div className=" p-2 w-full bg-neutral-700 ring ring-neutral-600 flex items-center justify-between rounded-md">
       <div className="flex items-center justify-start">
@@ -384,6 +382,7 @@ export const WeatherSidebar = () => {
     hourlyData,
   } = use(WeatherInfoContext);
   const data = isLoading ? createRandomArrayWithUniqueStrings(8) : hourlyData;
+  
   return (
     <div className="vert-scroll sidebar min-tb:col-span-3  ts:max-tb:col-span-4 relative overflow-y-scroll h-[550px] bg-neutral-800 p-6 rounded-lg flex flex-col justify-start gap-2 ">
       <SidebarHead
@@ -399,6 +398,8 @@ export const WeatherSidebar = () => {
         />
       )}
       <>
+        {data.map((item) => (
+          <HourlyUnit key={isLoading ? item : item[0]} item={item} />
         {data.map((item) => (
           <HourlyUnit key={isLoading ? item : item[0]} item={item} />
         ))}

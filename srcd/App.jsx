@@ -31,9 +31,9 @@ const App = () => {
     const getWeatherInfo = async () => {
       try {
         setIsLoading(true)
-        const weatherInfo = await fetchWeatherInfo(apiUrl); //apiUrl
-        const { timezone, current, current_units, daily, hourly } = weatherInfo;
-        await setCurrent(() => getCurrent(current, current_units, timezone));
+        const weatherInfo = await fetchWeatherInfo("data.json"); //apiUrl
+        const { current, current_units, daily, hourly } = weatherInfo;
+        await setCurrent(() => getCurrent(current, current_units));
         setWeekData(() => getWeeksData(daily));
         setHourlyData(() => getHourly(hourly));
         setIsLoading(false)
@@ -72,7 +72,7 @@ const App = () => {
         <ErrorComponenet />
       ) : (
         <main className="w-full flex flex-col items-center gap-7 relative mt-2 ">
-          <h1 className="text-4xl my-7">How's the sky looking today?</h1>
+          <h1 className="text-4xl max-xs:text-3xl text-center my-7">How's the sky looking today?</h1>
           <SearchBar />
           <div className="grid ts:grid-cols-10 w-full gap-7 ">
             <div className="main min-tb:col-span-7 ts:max-tb:col-span-6 flex gap-6 flex-col h-[70%]">
