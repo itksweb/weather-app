@@ -1,5 +1,5 @@
 import { useEffect, use } from "react";
-import { WeatherInfoContext } from "./store/weatherInfoContext";
+import { WeatherInfoContext } from "./store/WeatherInfoContext";
 import { getCurrent, getWeeksData, getHourly, fetchWeatherInfo } from "./utils";
 import {
   DailyForcast,
@@ -8,7 +8,7 @@ import {
   WeatherMain,
   WeatherMore,
   WeatherSidebar,
-  Header
+  Header,
 } from "./components/parts";
 
 const App = () => {
@@ -30,18 +30,18 @@ const App = () => {
   useEffect(() => {
     const getWeatherInfo = async () => {
       try {
-        setIsLoading(true)
+        setIsLoading(true);
         const weatherInfo = await fetchWeatherInfo(apiUrl); //apiUrl
         const { timezone, current, current_units, daily, hourly } = weatherInfo;
         await setCurrent(() => getCurrent(current, current_units, timezone));
         setWeekData(() => getWeeksData(daily));
         setHourlyData(() => getHourly(hourly));
-        setIsLoading(false)
+        setIsLoading(false);
         localStorage.setItem("hourly", JSON.stringify(hourly));
         localStorage.setItem("daily", JSON.stringify(daily));
       } catch (error) {
-        setIsError(true)
-        console.log(error)
+        setIsError(true);
+        console.log(error);
       }
     };
     getWeatherInfo();
@@ -60,7 +60,6 @@ const App = () => {
     // }
     // console.log(bg)
   }, []);
-
 
   return (
     <div

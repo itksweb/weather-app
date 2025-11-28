@@ -5,7 +5,7 @@ import {
   baseUrl,
 } from "../utils";
 import { use, useEffect, useRef, useState } from "react";
-import { WeatherInfoContext } from "../store/weatherInfoContext";
+import { WeatherInfoContext } from "../store/WeatherInfoContext";
 
 const MyIcon = ({ icon, cls }) => {
   return (
