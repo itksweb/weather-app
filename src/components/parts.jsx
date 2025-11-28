@@ -207,6 +207,15 @@ export const WeatherMain = () => {
       </div>
     );
   }
+  const { current, isLoading } = use(WeatherInfoContext);
+  if (isLoading) {
+    return (
+      <div className="rounded-lg gap-5 flex items-center justify-center flex-col p-5 bg-neutral-700 min-h-[210px]">
+        <MyIcon icon="loading" />
+        <p>Loading ...</p>
+      </div>
+    );
+  }
   return (
     <div className="weather-main rounded-lg max-xs:flex-col flex items-center justify-between p-5 bg-neutral-700 min-h-[210px] bg-[url(/assets/images/bg-today-large.svg)] max-sm:bg-[url(/assets/images/bg-today-small.svg)] bg-cover">
       <div className="lef flex flex-col items-start max-xs:items-center">
@@ -229,11 +238,15 @@ export const WeatherMore = () => {
   const { current, isLoading } = use(WeatherInfoContext);
   const data = isLoading ? notIt : current.det;
 
+  const { current, isLoading } = use(WeatherInfoContext);
+  const data = isLoading ? notIt : current.det;
+
   return (
     <div className="grid grid-cols-4 max-sm:grid-cols-2 gap-3">
       {data.map((item, index) => {
         return (
           <div
+            key={isLoading ? item : item[0]}
             key={isLoading ? item : item[0]}
             className="min-h-[70px] p-3 bg-neutral-800 ring ring-neutral-600 col-span-1 rounded-md "
           >
@@ -269,6 +282,8 @@ const DailyForcastUnit = ({ item, isLoading }) => {
 export const DailyForcast = () => {
   const { weekData, isLoading } = use(WeatherInfoContext);
   const data = isLoading ? createRandomArrayWithUniqueStrings(7) : weekData;
+  const { weekData, isLoading } = use(WeatherInfoContext);
+  const data = isLoading ? createRandomArrayWithUniqueStrings(7) : weekData;
 
   return (
     <div className="">
@@ -288,9 +303,15 @@ export const DailyForcast = () => {
 
 const SidebarHead = () => {
   const { setOpenDays, selectedDay } = use(WeatherInfoContext);
+  const { setOpenDays, selectedDay } = use(WeatherInfoContext);
   return (
     <div className="flex items-center justify-between">
       <p className="hourly">Hourly forecast</p>
+      <ButtonWithIcon
+        action={() => setOpenDays((prev) => !prev)}
+        text={selectedDay}
+        alt2="dropdown"
+      />
       <ButtonWithIcon
         action={() => setOpenDays((prev) => !prev)}
         text={selectedDay}
@@ -352,6 +373,12 @@ const HourlyUnit = ({ item }) => {
       <div className=" p-5 w-full bg-neutral-700 ring ring-neutral-600 rounded-md"></div>
     );
   }
+  const { isLoading } = use(WeatherInfoContext);
+  if (isLoading) {
+    return (
+      <div className=" p-5 w-full bg-neutral-700 ring ring-neutral-600 rounded-md"></div>
+    );
+  }
   return (
     <div className=" p-2 w-full bg-neutral-700 ring ring-neutral-600 flex items-center justify-between rounded-md">
       <div className="flex items-center justify-start">
@@ -373,10 +400,12 @@ export const WeatherSidebar = () => {
     selectedDay,
     openDays,
     isLoading,
+    isLoading,
     setSelectedDay,
     weekData,
     hourlyData,
   } = use(WeatherInfoContext);
+  const data = isLoading ? createRandomArrayWithUniqueStrings(8) : hourlyData;
   const data = isLoading ? createRandomArrayWithUniqueStrings(8) : hourlyData;
   return (
     <div className="vert-scroll sidebar min-tb:col-span-3  ts:max-tb:col-span-4 relative overflow-y-scroll h-[550px] bg-neutral-800 p-6 rounded-lg flex flex-col justify-start gap-2 ">
@@ -393,6 +422,8 @@ export const WeatherSidebar = () => {
         />
       )}
       <>
+        {data.map((item) => (
+          <HourlyUnit key={isLoading ? item : item[0]} item={item} />
         {data.map((item) => (
           <HourlyUnit key={isLoading ? item : item[0]} item={item} />
         ))}
