@@ -221,8 +221,8 @@ export const WeatherMain = () => {
       </div>
       <div className="rig flex items-center justify-end">
         <img
-          src="/assets/images/icon-sunny.webp"
-          alt="sunny"
+          src={`/assets/images/icon-${current.iconName}.webp`} //"/assets/images/icon-sunny.webp"
+          alt={current.iconName}
           className="size-[80px]"
         />
         <span className="text-5xl">{current.temperature}&deg;</span>
@@ -263,7 +263,11 @@ const DailyForcastUnit = ({ item, isLoading }) => {
   return (
     <div className="min-h-[120px] px-2 py-1 ring ring-neutral-600 bg-neutral-800 flex flex-col justify-between col-span-1 rounded-md">
       <p className="">{item[0].slice(0, 3)}</p>
-      <img src="/assets/images/icon-drizzle.webp" alt="drizzle" className="" />
+      <img
+        src={`/assets/images/icon-${item[3]}.webp`}
+        alt={item[3]}
+        className=""
+      />
       <div className="flex items-end justify-between text-[14px] max-xl:text-[12px] max">
         <span className="le">{item[1]}&deg;</span>
         <span className="ri">{item[2]}&deg;</span>
@@ -362,8 +366,8 @@ const HourlyUnit = ({ item }) => {
     <div className=" p-2 w-full bg-neutral-700 ring ring-neutral-600 flex items-center justify-between rounded-md">
       <div className="flex items-center justify-start">
         <img
-          src="/assets/images/icon-drizzle.webp"
-          alt="drizzle"
+          src={`/assets/images/icon-${item[2]}.webp`}
+          alt={item[2]}
           className="size-7"
         />
         <span className="le">{item[0]}</span>

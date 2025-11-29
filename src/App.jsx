@@ -31,7 +31,7 @@ const App = () => {
     const getWeatherInfo = async () => {
       try {
         setIsLoading(true);
-        const weatherInfo = await fetchWeatherInfo(apiUrl); //apiUrl
+        const weatherInfo = await fetchWeatherInfo("data.json"); //apiUrl
         const { timezone, current, current_units, daily, hourly } = weatherInfo;
         await setCurrent(() => getCurrent(current, current_units, timezone));
         setWeekData(() => getWeeksData(daily));
