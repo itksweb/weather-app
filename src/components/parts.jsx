@@ -5,7 +5,7 @@ import {
   baseUrl,
 } from "../utils";
 import { use, useEffect, useRef, useState } from "react";
-import { WeatherInfoContext } from "../store/weatherInfoContext";
+import { WeatherInfoContext } from "../store/WeatherInfoContext";
 
 const MyIcon = ({ icon, cls }) => {
   return (
@@ -17,22 +17,49 @@ const MyIcon = ({ icon, cls }) => {
   );
 };
 
-export const ButtonWithIcon = ({ action, text, alt1 = "", alt2 = "" }) => {
+export const ButtonWithIcon = ({
+  id,
+  cls,
+  action,
+  text,
+  alt1 = "",
+  alt2 = "",
+}) => {
   return (
     <button
+      id={id ? id : ""}
       onClick={action}
       type="button"
       className="text-white bg-neutral-700 cursor-pointer focus:outline-none  font-medium rounded-md text-sm px-5 py-2.5 text-center inline-flex items-center gap-1.5 "
     >
-      {alt1 && <MyIcon icon={alt1} />}
+      {alt1 && <MyIcon cls={cls} icon={alt1} />}
       {text}
-      {alt2 && <MyIcon icon={alt2} />}
+      {alt2 && <MyIcon cls={cls} icon={alt2} />}
     </button>
   );
 };
 
 export const Header = () => {
   const { openUnits, setOpenUnits } = use(WeatherInfoContext);
+  const dropdownRef = useRef(null);
+  const handleClickOutside = (e) => {
+    const notBtn = e.target.id !== "dont" && e.target.className !== "inBtn";
+    if (
+      dropdownRef.current &&
+      !dropdownRef.current.contains(e.target) &&
+      notBtn
+    ) {
+      setOpenUnits(false);
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [dropdownRef]);
+
   return (
     <header className={`w-full relative`}>
       <div className="w-full flex justify-between items-start">
@@ -42,15 +69,16 @@ export const Header = () => {
           action={() => setOpenUnits((prev) => !prev)}
           alt1="units"
           alt2="dropdown"
+          id="dont"
+          cls="inBtn"
         />
       </div>
-      {openUnits ? <UnitsDropdown /> : <></>}
+      {openUnits ? <UnitsDropdown ref={dropdownRef} /> : <></>}
     </header>
   );
 };
 
-export const UnitsDropdown = () => {
-  const dropdownRef = useRef(null);
+export const UnitsDropdown = ({ ref }) => {
   const {
     setPrecUnit,
     setWispUnit,
@@ -88,19 +116,6 @@ export const UnitsDropdown = () => {
       setWispUnit("mph");
     }
   };
-
-  const handleClickOutside = (e) => {
-    if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-      setOpenUnits(false);
-    }
-  };
-
-  useEffect(() => {
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [dropdownRef]);
 
   const SwitchButton = ({ title }) => {
     return (
@@ -144,7 +159,7 @@ export const UnitsDropdown = () => {
 
   return (
     <div
-      ref={dropdownRef}
+      ref={ref}
       className="z-10 space-y-3 bg-neutral-800 mt-2 ring ring-neutral-600 p-2 rounded-md shadow-sm w-46 absolute right-0 "
     >
       <div className="grid grid-cols-2 gap-2 ">
@@ -199,15 +214,15 @@ export const WeatherMain = () => {
     );
   }
   return (
-    <div className="weather-main rounded-lg flex items-center justify-between p-5 bg-neutral-700 min-h-[210px] bg-[url(/assets/images/bg-today-large.svg)] max-sm:bg-[url(/assets/images/bg-today-small.svg)] bg-cover">
-      <div className="lef">
-        <p className="place">Warri</p>
+    <div className="weather-main rounded-lg max-xs:flex-col flex items-center justify-between p-5 bg-neutral-700 min-h-[210px] bg-[url(/assets/images/bg-today-large.svg)] max-sm:bg-[url(/assets/images/bg-today-small.svg)] bg-cover">
+      <div className="lef flex flex-col items-start max-xs:items-center">
+        <p className="place">{current.location}</p>
         <p className="date">{current.date}</p>
       </div>
       <div className="rig flex items-center justify-end">
         <img
-          src="/assets/images/icon-sunny.webp"
-          alt="sunny"
+          src={`/assets/images/icon-${current.iconName}.webp`} //"/assets/images/icon-sunny.webp"
+          alt={current.iconName}
           className="size-[80px]"
         />
         <span className="text-5xl">{current.temperature}&deg;</span>
@@ -221,7 +236,7 @@ export const WeatherMore = () => {
   const data = isLoading ? notIt : current.det;
 
   return (
-    <div className="grid grid-cols-4 gap-3">
+    <div className="grid grid-cols-4 max-sm:grid-cols-2 gap-3">
       {data.map((item, index) => {
         return (
           <div
@@ -229,7 +244,9 @@ export const WeatherMore = () => {
             className="min-h-[70px] p-3 bg-neutral-800 ring ring-neutral-600 col-span-1 rounded-md "
           >
             <p className="text-sm font-light">{notIt[index]}</p>
-            <p className="text-lg mt-3">{isLoading ? "__" : item[1]}</p>
+            <p className="text-lg tt:max-[1030px]:text-base  mt-3">
+              {isLoading ? "__" : item[1]}
+            </p>
           </div>
         );
       })}
@@ -246,8 +263,12 @@ const DailyForcastUnit = ({ item, isLoading }) => {
   return (
     <div className="min-h-[120px] px-2 py-1 ring ring-neutral-600 bg-neutral-800 flex flex-col justify-between col-span-1 rounded-md">
       <p className="">{item[0].slice(0, 3)}</p>
-      <img src="/assets/images/icon-drizzle.webp" alt="drizzle" className="" />
-      <div className="flex items-end justify-between text-[14px]">
+      <img
+        src={`/assets/images/icon-${item[3]}.webp`}
+        alt={item[3]}
+        className=""
+      />
+      <div className="flex items-end justify-between text-[14px] max-xl:text-[12px] max">
         <span className="le">{item[1]}&deg;</span>
         <span className="ri">{item[2]}&deg;</span>
       </div>
@@ -262,7 +283,7 @@ export const DailyForcast = () => {
   return (
     <div className="">
       <h4 className="text-xl mb-2">Daily forecast</h4>
-      <div className="grid grid-cols-7 gap-3">
+      <div className="grid grid-cols-7 xs:max-md:grid-cols-4 ts:max-tb:grid-cols-4 max-xs:grid-cols-3 gap-3">
         {data.map((item) => (
           <DailyForcastUnit
             key={isLoading ? item : item[0]}
@@ -345,8 +366,8 @@ const HourlyUnit = ({ item }) => {
     <div className=" p-2 w-full bg-neutral-700 ring ring-neutral-600 flex items-center justify-between rounded-md">
       <div className="flex items-center justify-start">
         <img
-          src="/assets/images/icon-drizzle.webp"
-          alt="drizzle"
+          src={`/assets/images/icon-${item[2]}.webp`}
+          alt={item[2]}
           className="size-7"
         />
         <span className="le">{item[0]}</span>
@@ -368,7 +389,7 @@ export const WeatherSidebar = () => {
   } = use(WeatherInfoContext);
   const data = isLoading ? createRandomArrayWithUniqueStrings(8) : hourlyData;
   return (
-    <div className="vert-scroll sidebar col-span-7 relative overflow-y-scroll h-[550px] bg-neutral-800 p-6 rounded-lg flex flex-col justify-start gap-2 ">
+    <div className="vert-scroll sidebar min-tb:col-span-3  ts:max-tb:col-span-4 relative overflow-y-scroll h-[550px] bg-neutral-800 p-6 rounded-lg flex flex-col justify-start gap-2 ">
       <SidebarHead
         setOpenDays={setOpenDays}
         selectedDay={selectedDay}
@@ -424,12 +445,12 @@ export const SearchBar = () => {
   }, [searchText]);
 
   return (
-    <div className="search_component flex flex-col items-center w-1/2">
-      <form className="flex items-center w-full">
+    <div className="search_component flex flex-col items-center w-1/2 max-md:w-full">
+      <form className="flex gap-2 max-xs:flex-col items-center justify-center w-full">
         <label htmlFor="simple-search" className="sr-only">
           Search
         </label>
-        <div className="w-full flex items-center bg-neutral-800 hover:bg-neutral-700 focus:border text-neutral-200 text-sm rounded-lg focus:ring-neutral-200 focus:border-neutral-200 p-2.5 ">
+        <div className="w-full flex items-center xs:max-md:w-[75%] bg-neutral-800 hover:bg-neutral-700 focus:border text-neutral-200 text-sm rounded-lg focus:ring-neutral-200 focus:border-neutral-200 p-2.5 ">
           <MyIcon icon="search" />
           <input
             type="text"
@@ -443,7 +464,7 @@ export const SearchBar = () => {
         </div>
         <button
           type="submit"
-          className="p-2.5 ms-2 text-sm font-medium text-neutral-0 bg-blue-500 rounded-lg  hover:bg-blue-700 focus:border focus:ring-blue-500 focus:border-blue-500 "
+          className="xs:max-md:w-[25%] max-xs:w-full p-2.5 ms-2 text-sm font-medium text-neutral-0 bg-blue-500 rounded-lg  hover:bg-blue-700 focus:border focus:ring-blue-500 focus:border-blue-500 "
         >
           Search
         </button>

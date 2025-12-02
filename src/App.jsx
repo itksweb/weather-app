@@ -1,5 +1,5 @@
 import { useEffect, use } from "react";
-import { WeatherInfoContext } from "./store/weatherInfoContext";
+import { WeatherInfoContext } from "./store/WeatherInfoContext";
 import { getCurrent, getWeeksData, getHourly, fetchWeatherInfo } from "./utils";
 import {
   DailyForcast,
@@ -8,7 +8,7 @@ import {
   WeatherMain,
   WeatherMore,
   WeatherSidebar,
-  Header
+  Header,
 } from "./components/parts";
 
 const App = () => {
@@ -30,18 +30,18 @@ const App = () => {
   useEffect(() => {
     const getWeatherInfo = async () => {
       try {
-        setIsLoading(true)
-        const weatherInfo = await fetchWeatherInfo(apiUrl);
-        const { current, current_units, daily, hourly } = weatherInfo;
-        await setCurrent(() => getCurrent(current, current_units));
+        setIsLoading(true);
+        const weatherInfo = await fetchWeatherInfo("data.json"); //apiUrl
+        const { timezone, current, current_units, daily, hourly } = weatherInfo;
+        await setCurrent(() => getCurrent(current, current_units, timezone));
         setWeekData(() => getWeeksData(daily));
         setHourlyData(() => getHourly(hourly));
-        setIsLoading(false)
+        setIsLoading(false);
         localStorage.setItem("hourly", JSON.stringify(hourly));
         localStorage.setItem("daily", JSON.stringify(daily));
       } catch (error) {
-        setIsError(true)
-        console.log(error)
+        setIsError(true);
+        console.log(error);
       }
     };
     getWeatherInfo();
@@ -61,11 +61,10 @@ const App = () => {
     // console.log(bg)
   }, []);
 
-
   return (
     <div
       data-theme={theme}
-      className={`min-h-[100vh] text-col max-lg:w-[90%] lg:max-[1440px]:w-[85%] py-10 flex flex-col items-center`}
+      className={`min-h-[100vh] text-col py-10 flex flex-col items-center`}
     >
       <Header />
       {isError ? (
@@ -74,8 +73,8 @@ const App = () => {
         <main className="w-full flex flex-col items-center gap-7 relative mt-2 ">
           <h1 className="text-4xl my-7">How's the sky looking today?</h1>
           <SearchBar />
-          <div className="grid grid-cols-20 w-full gap-7 ">
-            <div className="main col-span-13 flex gap-6 flex-col h-[70%]">
+          <div className="grid ts:grid-cols-10 w-full gap-7 ">
+            <div className="main min-tb:col-span-7 ts:max-tb:col-span-6 flex gap-6 flex-col h-[70%]">
               <WeatherMain />
               <WeatherMore />
               <DailyForcast />

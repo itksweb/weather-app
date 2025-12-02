@@ -15,6 +15,10 @@
   --breakpoint-xxs: 15rem;
   --breakpoint-xls: 22.5rem;
   --breakpoint-xs: 30rem;
+  --breakpoint-tt: 951px;
+  --breakpoint-tb: 1100px;
+  --breakpoint-ts: 1010px;
+
 
   --color-neutral-900: hsl(243, 96%, 9%);
   --color-neutral-800: hsl(243, 27%, 20%);
