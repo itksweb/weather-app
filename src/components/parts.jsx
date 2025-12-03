@@ -2,12 +2,11 @@ import {
   createRandomArrayWithUniqueStrings,
   getHourlyFromSelectedDay,
   notIt,
-  baseUrl,
 } from "../utils";
 import { use, useEffect, useRef, useState } from "react";
 import { WeatherInfoContext } from "../store/WeatherInfoContext";
 
-const MyIcon = ({ icon, cls }) => {
+export const MyIcon = ({ icon, cls }) => {
   return (
     <img
       src={`/assets/images/icon-${icon}.svg`}
@@ -66,7 +65,7 @@ export const Header = () => {
         <img src={`/assets/images/logo.svg`} alt="weather app logo" />
         <ButtonWithIcon
           text="Units"
-          action={() => setOpenUnits((prev) => !prev)}
+          action={() => setOpenUnits(!openUnits)}
           alt1="units"
           alt2="dropdown"
           id="dont"
@@ -87,8 +86,10 @@ export const UnitsDropdown = ({ ref }) => {
     wispUnit,
     tempUnit,
     setApiUrl,
-    setOpenUnits,
+    location,
   } = use(WeatherInfoContext);
+
+  let baseUrl = `https://api.open-meteo.com/v1/forecast?latitude=${location.latitude}&longitude=${location.longitude}&daily=weather_code,temperature_2m_max,temperature_2m_min&hourly=temperature_2m,weather_code&current=temperature_2m,precipitation,relative_humidity_2m,wind_speed_10m,apparent_temperature,weather_code&timezone=auto`;
 
   useEffect(() => {
     const setUrl = () => {
@@ -204,7 +205,7 @@ export const UnitsDropdown = ({ ref }) => {
 };
 
 export const WeatherMain = () => {
-  const { current, isLoading } = use(WeatherInfoContext);
+  const { current, isLoading, currentLocation } = use(WeatherInfoContext);
   if (isLoading) {
     return (
       <div className="rounded-lg gap-5 flex items-center justify-center flex-col p-5 bg-neutral-700 min-h-[210px]">
@@ -216,7 +217,9 @@ export const WeatherMain = () => {
   return (
     <div className="weather-main rounded-lg max-xs:flex-col flex items-center justify-between p-5 bg-neutral-700 min-h-[210px] bg-[url(/assets/images/bg-today-large.svg)] max-sm:bg-[url(/assets/images/bg-today-small.svg)] bg-cover">
       <div className="lef flex flex-col items-start max-xs:items-center">
-        <p className="place">{current.location}</p>
+        <p className="place">
+          {currentLocation ? currentLocation : current.location}
+        </p>
         <p className="date">{current.date}</p>
       </div>
       <div className="rig flex items-center justify-end">
@@ -416,41 +419,47 @@ export const SearchBar = () => {
   const [searching, setSearching] = useState(false);
   const { likelyLocations, setLikelyLocations } = use(WeatherInfoContext);
 
+  let timeoutID = null;
+  useEffect(() => {
+    const geolocate = async () => {
+      const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(
+        searchText
+      )}&count=5&language=en&format=json`;
+      try {
+        setSearching(true);
+        const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error("Failed to search locations");
+        }
+        const data = await response.json();
+        console.log(" here ", data.results);
+        setLikelyLocations([...data.results]);
+      } catch (error) {
+        console.log(error);
+      } finally {
+        setSearching(false);
+      }
+    };
+    if (searchText.trim().length > 2) {
+      timeoutID = setTimeout(() => geolocate(), 1000);
+    } else {
+      setLikelyLocations([]);
+    }
+    return () => clearTimeout(timeoutID);
+  }, [searchText]);
+
   const handleInputChange = (e) => {
+    clearTimeout(timeoutID);
     setSearchText(e.target.value);
   };
 
-  useEffect(() => {
-    if (searchText.trim().length >= 5) {
-      const urll = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(
-        searchText
-      )}&count=5&language=en&format=json`;
-      const geolocate = async () => {
-        try {
-          setSearching(true);
-          const response = await fetch(urll);
-          if (!response.ok) {
-            throw new Error("Failed to search locations");
-          }
-          const data = await response.json();
-          console.log(" here ", data.results);
-          setLikelyLocations([...data]);
-          setSearching(false);
-        } catch (error) {
-          console.log(error);
-        }
-      };
-      geolocate();
-    }
-  }, [searchText]);
-
   return (
-    <div className="search_component flex flex-col items-center w-1/2 max-md:w-full">
+    <div className="relative w-1/2 max-md:w-full">
       <form className="flex gap-2 max-xs:flex-col items-center justify-center w-full">
         <label htmlFor="simple-search" className="sr-only">
           Search
         </label>
-        <div className="w-full flex items-center xs:max-md:w-[75%] bg-neutral-800 hover:bg-neutral-700 focus:border text-neutral-200 text-sm rounded-lg focus:ring-neutral-200 focus:border-neutral-200 p-2.5 ">
+        <div className="flex items-center max-xs:w-full w-[75%] bg-neutral-800 hover:bg-neutral-700 focus:border text-neutral-200 text-sm rounded-lg focus:ring-neutral-200 focus:border-neutral-200 p-2.5 ">
           <MyIcon icon="search" />
           <input
             type="text"
@@ -464,25 +473,38 @@ export const SearchBar = () => {
         </div>
         <button
           type="submit"
-          className="xs:max-md:w-[25%] max-xs:w-full p-2.5 ms-2 text-sm font-medium text-neutral-0 bg-blue-500 rounded-lg  hover:bg-blue-700 focus:border focus:ring-blue-500 focus:border-blue-500 "
+          className="w-[25%] max-xs:w-full p-2.5 text-sm font-medium text-neutral-0 bg-blue-500 rounded-lg  hover:bg-blue-700 focus:border focus:ring-blue-500 focus:border-blue-500 "
         >
           Search
         </button>
       </form>
-      {searchText && (
-        <SearchResults
-          searching={searching}
-          likelyLocations={likelyLocations}
-        />
+      {likelyLocations.length ? (
+        <SearchResults searching={searching} setSearchText={setSearchText} />
+      ) : (
+        <></>
       )}
     </div>
   );
 };
 
-const SearchResults = ({ searching, likelyLocations }) => {
+const SearchResults = ({ searching, setSearchText }) => {
+  const {
+    setLocation,
+    likelyLocations,
+    setLikelyLocations,
+    setCurrentLocation,
+  } = use(WeatherInfoContext);
+
+  const handleSelection = (item, desc) => {
+    const { latitude, longitude } = item;
+    setLocation({ latitude, longitude });
+    setLikelyLocations([]);
+    setCurrentLocation(`${item.name}, ${desc}`);
+    setSearchText("");
+  };
   if (searching) {
     return (
-      <div className="w-full flex items-center bg-neutral-800 hover:bg-neutral-700 focus:border text-neutral-200 text-sm rounded-lg focus:ring-neutral-200 focus:border-neutral-200 p-2.5 ">
+      <div className="w-full absolute top-15 max-xs:top-28 flex items-center bg-neutral-800 hover:bg-neutral-700 focus:border text-neutral-200 text-sm rounded-lg focus:ring-neutral-200 focus:border-neutral-200 p-2.5 ">
         <MyIcon icon="search" />
         <p>Search in progress</p>
       </div>
@@ -490,12 +512,25 @@ const SearchResults = ({ searching, likelyLocations }) => {
   }
 
   return (
-    <div className="w-full flex flex-col items-center bg-neutral-800 hover:bg-neutral-700 focus:border text-neutral-200 text-sm rounded-lg focus:ring-neutral-200 focus:border-neutral-200 p-2.5 ">
-      {likelyLocations.map((item) => (
-        <p key={item.id} className="">
-          {item.name}
-        </p>
-      ))}
+    <div className="w-full absolute top-15 max-xs:top-28 flex gap-2 items-center justify-center ">
+      <div className="max-xs:w-full w-[75%] flex flex-col bg-neutral-800 text-neutral-200 text-sm rounded-lg p-1 ">
+        {likelyLocations.map((item) => {
+          let desc = `(${item.admin2 ? item.admin2 + ", " : ""}${
+            item.admin1 ? item.admin1 + ", " : ""
+          } ${item.country})`;
+          return (
+            <p
+              onClick={() => handleSelection(item, desc)}
+              key={item.id}
+              className="p-2 hover:bg-neutral-700 focus:border focus:ring-neutral-200 focus:border-neutral-200 rounded-lg cursor-pointer"
+            >
+              <span className="font-bold">{item.name}</span>
+              <span className="text-neutral-300 text-[13px] italic"> {desc}</span>
+            </p>
+          );
+        })}
+      </div>
+      <div className="w-[25%] max-xs:hidden"> </div>
     </div>
   );
 };

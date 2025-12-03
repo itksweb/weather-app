@@ -18,20 +18,44 @@ const App = () => {
     setCurrent,
     setWeekData,
     setHourlyData,
-    setTheme,
+    setApiUrl,
     setSelectedDay,
     apiUrl,
     isError,
     isLoading,
     setIsError,
+    location,
+    setLocation,
     setIsLoading,
   } = use(WeatherInfoContext);
+
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition((position) => {
+        setLocation({
+          longitude: position.coords.longitude,
+          latitude: position.coords.latitude,
+        });
+      });
+    } else {
+      alert("Geolocation is not supported by this browser.");
+    }
+    console.log("setted");
+  }, []); // get user's location
+
+  useEffect(() => {
+    const { latitude, longitude } = location;
+    setApiUrl(
+      `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&daily=weather_code,temperature_2m_max,temperature_2m_min&hourly=temperature_2m,weather_code&current=temperature_2m,precipitation,relative_humidity_2m,wind_speed_10m,apparent_temperature,weather_code&timezone=auto`
+    );
+    console.log("location: ", location);
+  }, [location]); // updates apiUrl based on user's location
 
   useEffect(() => {
     const getWeatherInfo = async () => {
       try {
         setIsLoading(true);
-        const weatherInfo = await fetchWeatherInfo("data.json"); //apiUrl
+        const weatherInfo = await fetchWeatherInfo(apiUrl); //apiUrl
         const { timezone, current, current_units, daily, hourly } = weatherInfo;
         await setCurrent(() => getCurrent(current, current_units, timezone));
         setWeekData(() => getWeeksData(daily));
@@ -44,7 +68,7 @@ const App = () => {
         console.log(error);
       }
     };
-    getWeatherInfo();
+    if (apiUrl) getWeatherInfo();
   }, [apiUrl]);
 
   useEffect(() => {
@@ -53,13 +77,12 @@ const App = () => {
     }
   }, [weekData]);
 
-  useEffect(() => {
-    // const userThemePref = retrieveUserPref();
-    // if (userThemePref && userThemePref !== theme) {
-    //   setTheme(userThemePref)
-    // }
-    // console.log(bg)
-  }, []);
+  // useEffect(() => {
+  //   const userThemePref = retrieveUserPref();
+  //   if (userThemePref && userThemePref !== theme) {
+  //     setTheme(userThemePref)
+  //   }
+  // }, []);
 
   return (
     <div
