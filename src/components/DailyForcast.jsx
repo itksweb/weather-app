@@ -1,5 +1,6 @@
 import { use } from "react";
 import { WeatherInfoContext } from "../store/WeatherInfoContext";
+import { createRandomArrayWithUniqueStrings } from "../utils";
 
 const DailyForcast = () => {
   const { weekData, isLoading } = use(WeatherInfoContext);
@@ -8,7 +9,7 @@ const DailyForcast = () => {
   const DailyForcastUnit = ({ item }) => {
     if (isLoading) {
       return (
-        <div className=" min-h-[120px] px-2 py-1 ring ring-neutral-600 bg-neutral-800 rounded-md"></div>
+        <div className=" min-h-[120px] px-2 py-1 ring ring-neutral-600 bg-neutral-800 flex flex-col justify-between col-span-1 rounded-md"></div>
       );
     }
     return (

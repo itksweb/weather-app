@@ -1,15 +1,13 @@
 import { useEffect, use } from "react";
 import { WeatherInfoContext } from "./store/WeatherInfoContext";
 import { getCurrent, getWeeksData, getHourly, fetchWeatherInfo } from "./utils";
-import {
-  DailyForcast,
-  ErrorComponenet,
-  SearchBar,
-  WeatherMain,
-  WeatherMore,
-  WeatherSidebar,
-  Header,
-} from "./components/parts";
+import WeatherMain from "./components/WeatherMain";
+import WeatherDetails from "./components/WeatherDetails";
+import DailyForcast from "./components/DailyForcast";
+import HourlyForecast from "./components/WeatherSidebar";
+import Header from "./components/Header";
+import SearchBar from "./components/SearchBar";
+import { ErrorComponenet } from "./components/parts";
 
 const App = () => {
   const {
@@ -99,10 +97,10 @@ const App = () => {
           <div className="grid ts:grid-cols-10 w-full gap-7 ">
             <div className="main min-tb:col-span-7 ts:max-tb:col-span-6 flex gap-6 flex-col h-[70%]">
               <WeatherMain />
-              <WeatherMore />
+              <WeatherDetails />
               <DailyForcast />
             </div>
-            <WeatherSidebar />
+            <HourlyForecast />
           </div>
         </main>
       )}

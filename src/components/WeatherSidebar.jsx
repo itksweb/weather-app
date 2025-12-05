@@ -1,6 +1,6 @@
-import { use, useRef } from "react";
+import { use, useRef, useEffect } from "react";
 import { WeatherInfoContext } from "../store/WeatherInfoContext";
-import { createRandomArrayWithUniqueStrings } from "../utils";
+import { createRandomArrayWithUniqueStrings, getHourlyFromSelectedDay } from "../utils";
 import { ButtonWithIcon } from "./parts";
 
 
@@ -63,7 +63,7 @@ const DaysDropdown = () => {
   );
 };
 
-const WeatherSidebar = () => {
+const HourlyForecast = () => {
   const {
     setOpenDays,
     selectedDay,
@@ -119,4 +119,4 @@ const WeatherSidebar = () => {
   );
 };
 
-export default WeatherSidebar
+export default HourlyForecast

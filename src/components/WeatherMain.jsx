@@ -7,14 +7,14 @@ const WeatherMain = () => {
   const { current, isLoading, currentLocation } = use(WeatherInfoContext);
   if (isLoading) {
     return (
-      <div className="rounded-lg gap-5 flex items-center justify-center flex-col p-5 bg-neutral-700 min-h-[210px]">
+      <div className="w-full rounded-lg gap-5 flex items-center justify-center flex-col p-5 bg-neutral-700 min-h-[260px]">
         <MyIcon icon="loading" />
         <p>Loading ...</p>
       </div>
     );
   }
   return (
-    <div className="weather-main rounded-lg max-xs:flex-col flex items-center justify-between p-5 bg-neutral-700 min-h-[210px] bg-[url(/assets/images/bg-today-large.svg)] max-sm:bg-[url(/assets/images/bg-today-small.svg)] bg-cover">
+    <div className="weather-main rounded-lg max-xs:flex-col flex items-center justify-between p-5 bg-neutral-700 min-h-[260px] bg-[url(/assets/images/bg-today-large.svg)] max-sm:bg-[url(/assets/images/bg-today-small.svg)] bg-cover">
       <div className="lef flex flex-col items-start max-xs:items-center">
         <p className="place">
           {currentLocation ? currentLocation : current.location}
