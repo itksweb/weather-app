@@ -1,19 +1,24 @@
 import { use, useRef, useEffect } from "react";
 import { WeatherInfoContext } from "../store/WeatherInfoContext";
-import { createRandomArrayWithUniqueStrings, getHourlyFromSelectedDay } from "../utils";
+import {
+  createRandomArrayWithUniqueStrings,
+  getHourlyFromSelectedDay,
+} from "../utils";
 import { ButtonWithIcon } from "./parts";
-
 
 const SidebarHead = () => {
   const { openDays, setOpenDays, selectedDay } = use(WeatherInfoContext);
   return (
-    <div className="flex items-center justify-between">
-      <p className="hourly">Hourly forecast</p>
-      <ButtonWithIcon
-        action={() => setOpenDays(!openDays)}
-        text={selectedDay}
-        alt2="dropdown"
-      />
+    <div className="relative">
+      <div className="flex items-center justify-between">
+        <p className="hourly">Hourly forecast</p>
+        <ButtonWithIcon
+          action={() => setOpenDays(!openDays)}
+          text={selectedDay}
+          alt2="dropdown"
+        />
+      </div>
+      {openDays && <DaysDropdown />}
     </div>
   );
 };
@@ -48,13 +53,13 @@ const DaysDropdown = () => {
   return (
     <div
       ref={daysDropdownRef}
-      className="z-10 grid gap-3 bg-neutral-800 ring ring-neutral-600 p-2 rounded-md shadow-sm w-40 absolute right-0 "
+      className="z-10 grid gap-3 mt-2 bg-neutral-800 ring ring-neutral-600 p-2 rounded-md shadow-sm w-40 absolute right-0 "
     >
       {weekData.map((it, index) => (
         <button
           onClick={() => handleClick(it[0], index)}
           key={it[0]}
-          className="text-sm w-full rounded-md p-2 hover:bg-neutral-700 text-neutral-200"
+          className="text-sm w-full rounded-md p-2 hover:bg-neutral-700 cursor-pointer text-neutral-200"
         >
           {it[0]}
         </button>
@@ -98,18 +103,7 @@ const HourlyForecast = () => {
 
   return (
     <div className="vert-scroll sidebar min-tb:col-span-3  ts:max-tb:col-span-4 relative overflow-y-scroll h-[550px] bg-neutral-800 p-6 rounded-lg flex flex-col justify-start gap-2 ">
-      <SidebarHead
-        setOpenDays={setOpenDays}
-        selectedDay={selectedDay}
-        openDays={openDays}
-      />
-      {openDays && (
-        <DaysDropdown
-          setSelectedDay={setSelectedDay}
-          setOpenDays={setOpenDays}
-          weekData={weekData}
-        />
-      )}
+      <SidebarHead />
       <>
         {data.map((item) => (
           <HourlyUnit key={isLoading ? item : item[0]} item={item} />
@@ -119,4 +113,4 @@ const HourlyForecast = () => {
   );
 };
 
-export default HourlyForecast
+export default HourlyForecast;
