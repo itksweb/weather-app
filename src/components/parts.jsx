@@ -43,17 +43,15 @@ export const UnitsDropdown = ({ ref }) => {
   useEffect(() => {
     const setUrl = () => {
       const baseUrl = `https://api.open-meteo.com/v1/forecast?latitude=${location.latitude}&longitude=${location.longitude}&daily=weather_code,temperature_2m_max,temperature_2m_min&hourly=temperature_2m,weather_code&current=temperature_2m,precipitation,relative_humidity_2m,wind_speed_10m,apparent_temperature,weather_code&timezone=auto`;
-
-      if (!wispUnit && !tempUnit && !precUnit) {
-        setApiUrl(baseUrl);
-        setUnitForm("METRIC");
-        return;
-      }
-      if (wispUnit && tempUnit && precUnit) setUnitForm("IMPERIAL");
       const wispStr = wispUnit ? `&wind_speed_unit=${wispUnit}` : "";
       const tempStr = tempUnit ? `&temperature_unit=${tempUnit}` : "";
       const precStr = precUnit ? `&precipitation_unit=${precUnit}` : "";
       const newUrl = baseUrl + wispStr + tempStr + precStr;
+
+      if (!wispUnit && !tempUnit && !precUnit) setUnitForm("METRIC");
+      else if (wispUnit && tempUnit && precUnit) setUnitForm("IMPERIAL");
+      else setUnitForm("")
+      
       setApiUrl(newUrl);
     };
     setUrl();

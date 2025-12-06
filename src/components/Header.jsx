@@ -5,7 +5,6 @@ import { UnitsDropdown, ButtonWithIcon } from "./parts";
 
 
 const Header = () => {
-  // const { openUnits, setOpenUnits } = use(WeatherInfoContext);
   const [openUnits, setOpenUnits] = useState(false);
   const dropdownRef = useRef(null);
 
