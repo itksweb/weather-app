@@ -6,18 +6,19 @@ const baseUrl = `https://api.open-meteo.com/v1/forecast?latitude=52.52&longitude
 export const WeatherInfoProvider = ({ children }) => {
   const [theme, setTheme] = useState("dark");
   const [apiUrl, setApiUrl] = useState("");
-  const [openDays, setOpenDays] = useState(false);
   const [selectedDay, setSelectedDay] = useState("");
+  const [currentLocation, setCurrentLocation] = useState("");
   const [weekData, setWeekData] = useState([]);
   const [hourlyData, setHourlyData] = useState([]);
   const [likelyLocations, setLikelyLocations] = useState([]);
+  const [openDays, setOpenDays] = useState(false);
   const [isError, setIsError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [location, setLocation] = useState({
     latitude: 52.52,
     longitude: 13.41,
   });
-  const [currentLocation, setCurrentLocation] = useState("");
+  
   const [current, setCurrent] = useState({
     date: "",
     temperature: "",
